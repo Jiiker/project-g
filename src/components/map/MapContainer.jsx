@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import SunCalc from "suncalc";
 import * as turf from "@turf/turf";
+import MapDebugInfo from "./MapDebugInfo";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
