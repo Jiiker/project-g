@@ -81,17 +81,18 @@ function MapContainer() {
         },
       });
 
-      map.current.addLayer({
-        id: "shadow-layer",
-        type: "fill",
-        source: "shadows",
-        paint: {
-          "fill-color": "#000",
-          "fill-opacity": 0.4,
+      map.current.addLayer(
+        {
+          id: "shadow-layer",
+          type: "fill",
+          source: "shadows",
+          paint: {
+            "fill-color": "#000",
+            "fill-opacity": 0.4,
+          },
         },
-      }, "3d-buildings"); // Place shadow layer below 3d-buildings
-
-      
+        "3d-buildings"
+      ); // Place shadow layer below 3d-buildings
 
       // Function to update shadows
       const updateShadows = () => {
@@ -106,10 +107,13 @@ function MapContainer() {
 
         // Only draw shadows if sun is above horizon
         if (sunAltitude > 0) {
-          const buildingFeatures = map.current.querySourceFeatures("composite", {
-            sourceLayer: "building",
-            filter: ["==", "extrude", "true"],
-          });
+          const buildingFeatures = map.current.querySourceFeatures(
+            "composite",
+            {
+              sourceLayer: "building",
+              filter: ["==", "extrude", "true"],
+            }
+          );
 
           const shadowFeatures = [];
 
@@ -118,17 +122,26 @@ function MapContainer() {
             const minHeight = feature.properties.min_height || 0;
             const effectiveHeight = height - minHeight;
 
-            if (effectiveHeight > 0 && feature.geometry && feature.geometry.type === "Polygon") {
+            if (
+              effectiveHeight > 0 &&
+              feature.geometry &&
+              feature.geometry.type === "Polygon"
+            ) {
               const shadowLength = effectiveHeight / Math.tan(sunAltitude);
-              const shadowBearing = (sunAzimuth * 180 / Math.PI + 180) % 360;
+              const shadowBearing = ((sunAzimuth * 180) / Math.PI + 180) % 360;
 
               const originalCoords = feature.geometry.coordinates[0];
 
               const allPoints = [];
 
-              originalCoords.forEach(coord => {
+              originalCoords.forEach((coord) => {
                 allPoints.push(turf.point(coord));
-                const projectedCoord = movePoint(coord[0], coord[1], shadowLength, shadowBearing);
+                const projectedCoord = movePoint(
+                  coord[0],
+                  coord[1],
+                  shadowLength,
+                  shadowBearing
+                );
                 allPoints.push(turf.point(projectedCoord));
               });
 
