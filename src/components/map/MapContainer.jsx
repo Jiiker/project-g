@@ -32,13 +32,13 @@ function movePoint(lon, lat, distance, bearing) {
 function MapContainer() {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [lng, setLng] = useState(126.978); // Seoul longitude
-  const [lat, setLat] = useState(37.5665); // Seoul latitude
-  const [zoom, setZoom] = useState(14);
-  const [userLocation, setUserLocation] = useState(null); // New state for user's location
+  const [lng, setLng] = useState(126.978);
+  const [lat, setLat] = useState(37.5665);
+  const [zoom, setZoom] = useState(18);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
+    if (map.current) return;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -54,7 +54,11 @@ function MapContainer() {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
           // Optionally, center the map on the user's location
-          map.current.flyTo({ center: [longitude, latitude], zoom: 14 });
+          map.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 18,
+            duration: 1000,
+          });
 
           // Add a marker for the user's location
           new mapboxgl.Marker()
@@ -211,7 +215,7 @@ function MapContainer() {
     map.current.on("move", () => {
       setLng(map.current.getCenter().lng.toFixed(4));
       setLat(map.current.getCenter().lat.toFixed(4));
-      setZoom(map.current.getZoom().toFixed(2));
+      setZoom(map.current.getZoom()); // toFixed(2) 제거
     });
   }, [lng, lat, zoom]);
 

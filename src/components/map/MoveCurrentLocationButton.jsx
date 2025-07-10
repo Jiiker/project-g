@@ -4,7 +4,7 @@ import { RiFocus3Line } from "react-icons/ri";
 const MoveCurrentLocationButton = ({ map, userLocation }) => {
   const focusOnUserLocation = () => {
     if (map && userLocation) {
-      map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 14 });
+      map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 18, duration: 1500 });
     }
   };
 
