@@ -4,6 +4,7 @@ import SunCalc from "suncalc";
 import * as turf from "@turf/turf";
 import MapDebugInfo from "./MapDebugInfo";
 import MoveCurrentLocationButton from "./MoveCurrentLocationButton";
+import ScaleController from "./ScaleController";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -221,8 +222,14 @@ function MapContainer() {
         zoom={parseFloat(zoom)}
         userLocation={userLocation}
       />
+      {map.current && (
+        <ScaleController map={map.current} zoom={parseFloat(zoom)} />
+      )}
       {map.current && userLocation && (
-        <MoveCurrentLocationButton map={map.current} userLocation={userLocation} />
+        <MoveCurrentLocationButton
+          map={map.current}
+          userLocation={userLocation}
+        />
       )}
     </div>
   );

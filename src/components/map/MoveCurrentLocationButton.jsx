@@ -11,21 +11,7 @@ const MoveCurrentLocationButton = ({ map, userLocation }) => {
   return (
     <button
       onClick={focusOnUserLocation}
-      style={{
-        position: 'absolute',
-        bottom: '20px',
-        right: '20px',
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        backgroundColor: '#3182F7',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        border: 'none',
-        cursor: 'pointer',
-        zIndex: 1000,
-      }}
+      className="absolute bottom-5 right-5 w-10 h-10 rounded-full bg-[#3182F7] flex justify-center items-center border-none cursor-pointer z-1000"
     >
       <RiFocus3Line size={24} color="white" />
     </button>
