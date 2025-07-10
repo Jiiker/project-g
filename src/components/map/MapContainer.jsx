@@ -118,7 +118,7 @@ function MapContainer() {
             "fill-color": "#000",
             "fill-opacity": 0.4,
           },
-          minzoom: 16,
+          minzoom: 15,
         },
         "3d-buildings"
       ); // Place shadow layer below 3d-buildings
@@ -156,7 +156,8 @@ function MapContainer() {
               feature.geometry.type === "Polygon"
             ) {
               const shadowLength = effectiveHeight / Math.tan(sunAltitude);
-              const sunDirectionBearing = ((sunAzimuth * 180) / Math.PI + 180) % 360; // Sun's bearing (0=North, CW)
+              const sunDirectionBearing =
+                ((sunAzimuth * 180) / Math.PI + 180) % 360; // Sun's bearing (0=North, CW)
               const shadowBearing = (sunDirectionBearing + 180) % 360; // Shadow's bearing (0=North, CW)
 
               const originalCoords = feature.geometry.coordinates[0];
