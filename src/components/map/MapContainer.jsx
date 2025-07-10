@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import SunCalc from "suncalc";
 import * as turf from "@turf/turf";
 import MapDebugInfo from "./MapDebugInfo";
+import MoveCurrentLocationButton from "./MoveCurrentLocationButton";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -213,10 +214,15 @@ function MapContainer() {
   return (
     <div className='w-full h-full relative'>
       <div ref={mapContainer} className='w-full h-full' />
-      <div className='absolute top-0 left-0 m-2 p-2 bg-white rounded shadow-md z-10'>
-        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
-        {userLocation && ` | User Location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`}
-      </div>
+      <MapDebugInfo
+        longitude={parseFloat(lng)}
+        latitude={parseFloat(lat)}
+        zoom={parseFloat(zoom)}
+        userLocation={userLocation}
+      />
+      {map.current && userLocation && (
+        <MoveCurrentLocationButton map={map.current} userLocation={userLocation} />
+      )}
     </div>
   );
 }
