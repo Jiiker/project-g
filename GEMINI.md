@@ -21,7 +21,7 @@
 - Tailwind CSS: 스타일링
 - Mapbox GL JS: 지도 및 3D 건물, 그림자 표시
 - suncalc: 태양 위치 계산
-- Jest & React Testing Library: 함수 단위 및 컴포넌트 테스트
+- react-icons: 아이콘
 - React Profiler & Lighthouse: 성능 측정 및 최적화
 
 # 프로젝트 실행 및 테스트
@@ -32,12 +32,6 @@
 - `npm run build`: 프로덕션용으로 앱을 빌드합니다.
 - `npm run preview`: 빌드된 앱을 미리 봅니다.
 
-## 테스트
-
-- `npm test`: Jest를 사용하여 테스트를 실행합니다.
-- 테스트 파일은 `src` 디렉터리 내에 `__tests__` 폴더를 만들어 관리합니다.
-- 파일명은 `*.test.js` 또는 `*.spec.js` 형식으로 작성합니다.
-
 # 프로젝트 구조
 
 - **아토믹 디자인 패턴**의 개념을 활용하여 컴포넌트를 체계적으로 관리합니다.
@@ -45,3 +39,11 @@
 
 - `src/pages`: 페이지 컴포넌트
 - `src/components`: 공통 컴포넌트
+  - `src/components/map/MapDebugInfo.jsx`: 지도 디버그 정보 표시 (개발 모드에서만 렌더링)
+  - `src/components/map/MoveCurrentLocationButton.jsx`: 현재 위치로 지도를 이동시키는 버튼
+  - `src/components/map/ScaleController.jsx`: 지도 스케일(줌 레벨) 조절 및 표시 버튼
+
+# 주요 기능 개선 사항
+
+- **그림자 방향 계산 로직 개선:** 태양의 방향과 반대되는 정확한 그림자 방향을 계산하도록 로직을 수정했습니다.
+- **그림자 렌더링 줌 레벨 조정:** 줌 레벨 15 이상에서만 그림자가 렌더링되도록 설정했습니다.
