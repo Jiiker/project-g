@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
 html, body, #root {
   margin: 0;
   padding: 0;

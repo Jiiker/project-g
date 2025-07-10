@@ -1,8 +1,8 @@
+import MapPage from './pages/MapPage';
+
 function App() {
   return (
-    <div>
-      <h1>Shadow Map</h1>
-    </div>
+    <MapPage />
   );
 }
 
