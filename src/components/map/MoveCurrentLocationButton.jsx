@@ -1,10 +1,21 @@
 import React from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
+/**
+ * 현재 위치로 지도를 이동시키는 버튼 컴포넌트.
+ *
+ * @param {object} props - 컴포넌트 props
+ * @param {object} props.map - Mapbox GL JS 지도 인스턴스
+ * @param {object} props.userLocation - 사용자의 현재 위치 (lat, lng 속성을 포함)
+ */
 const MoveCurrentLocationButton = ({ map, userLocation }) => {
   const focusOnUserLocation = () => {
     if (map && userLocation) {
-      map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 18, duration: 1500 });
+      map.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 18,
+        duration: 1500,
+      });
     }
   };
 

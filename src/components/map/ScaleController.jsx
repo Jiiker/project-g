@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
 
+/**
+ * 지도 스케일(줌 레벨)을 조절하고 표시하는 컴포넌트.
+ * + / - 버튼을 통해 줌 레벨을 정수 단위로 조절할 수 있습니다.
+ *
+ * @param {object} props - 컴포넌트 props
+ * @param {object} props.map - Mapbox GL JS 지도 인스턴스
+ * @param {number} props.zoom - 지도의 현재 줌 레벨
+ */
 const ScaleController = ({ map, zoom }) => {
   const [inputValue, setInputValue] = useState(zoom ? zoom.toFixed(0) : "");
 

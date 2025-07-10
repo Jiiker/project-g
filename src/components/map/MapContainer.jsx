@@ -8,9 +8,16 @@ import ScaleController from "./ScaleController";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// Helper function to move a point by a given distance and bearing
+/**
+ * 주어진 경도, 위도, 거리, 방위각을 기반으로 새로운 지점의 경도와 위도를 계산하는 헬퍼 함수.
+ * @param {number} lon - 시작 지점의 경도
+ * @param {number} lat - 시작 지점의 위도
+ * @param {number} distance - 이동할 거리 (미터)
+ * @param {number} bearing - 이동할 방위각 (도, 북쪽 0도, 시계 방향)
+ * @returns {number[]} - 새로운 지점의 [경도, 위도]
+ */
 function movePoint(lon, lat, distance, bearing) {
-  const R = 6378137; // Earth's radius in meters
+  const R = 6378137; // 지구 반지름
   const latRad = (lat * Math.PI) / 180;
   const lonRad = (lon * Math.PI) / 180;
   const bearingRad = (bearing * Math.PI) / 180;
@@ -29,6 +36,10 @@ function movePoint(lon, lat, distance, bearing) {
   return [(newLonRad * 180) / Math.PI, (newLatRad * 180) / Math.PI];
 }
 
+/**
+ * Mapbox GL JS 지도를 렌더링하고 그림자 및 사용자 인터랙션을 관리하는 메인 컴포넌트.
+ * @returns {JSX.Element} 지도 컨테이너 및 관련 UI 요소
+ */
 function MapContainer() {
   const mapContainer = useRef(null);
   const map = useRef(null);
@@ -40,6 +51,7 @@ function MapContainer() {
   useEffect(() => {
     if (map.current) return;
 
+    // Mapbox 지도 인스턴스 초기화
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/streets-v11",
@@ -47,27 +59,26 @@ function MapContainer() {
       zoom: zoom,
     });
 
-    // Get user's current location
+    // 브라우저 지리 위치 API를 사용하여 사용자 현재 위치 가져오기
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
-          // Optionally, center the map on the user's location
+          // 지도를 사용자 현재 위치로 이동
           map.current.flyTo({
             center: [longitude, latitude],
             zoom: 18,
             duration: 1000,
           });
 
-          // Add a marker for the user's location
+          // 사용자 위치에 마커 추가
           new mapboxgl.Marker()
             .setLngLat([longitude, latitude])
             .addTo(map.current);
         },
         (error) => {
           console.error("Error getting user location:", error);
-          // Handle error (e.g., show a message to the user)
         },
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
@@ -75,8 +86,9 @@ function MapContainer() {
       console.log("Geolocation is not supported by this browser.");
     }
 
+    // 지도 로드 완료 시 이벤트 리스너
     map.current.on("load", () => {
-      // Add 3D buildings layer
+      // 3D 건물 레이어 추가
       const layers = map.current.getStyle().layers;
       let labelLayerId;
       for (let i = 0; i < layers.length; i++) {
@@ -104,7 +116,7 @@ function MapContainer() {
         labelLayerId
       );
 
-      // Add shadow source and layer
+      // 그림자 소스 추가
       map.current.addSource("shadows", {
         type: "geojson",
         data: {
@@ -113,6 +125,7 @@ function MapContainer() {
         },
       });
 
+      // 그림자 레이어 추가
       map.current.addLayer(
         {
           id: "shadow-layer",
@@ -122,22 +135,19 @@ function MapContainer() {
             "fill-color": "#000",
             "fill-opacity": 0.4,
           },
-          minzoom: 15,
+          minzoom: 15, // 줌 레벨 15 이상에서 그림자 렌더링
         },
-        "3d-buildings"
-      ); // Place shadow layer below 3d-buildings
+        "3d-buildings" // 3D 건물 레이어 아래에 그림자 레이어 배치
+      );
 
-      // Function to update shadows
       const updateShadows = () => {
         const center = map.current.getCenter();
         const now = new Date();
         const sunPos = SunCalc.getPosition(now, center.lat, center.lng);
 
-        // Sun altitude and azimuth in radians
         const sunAltitude = sunPos.altitude;
         const sunAzimuth = sunPos.azimuth;
 
-        // Only draw shadows if sun is above horizon
         if (sunAltitude > 0) {
           const buildingFeatures = map.current.querySourceFeatures(
             "composite",
@@ -161,8 +171,8 @@ function MapContainer() {
             ) {
               const shadowLength = effectiveHeight / Math.tan(sunAltitude);
               const sunDirectionBearing =
-                ((sunAzimuth * 180) / Math.PI + 180) % 360; // Sun's bearing (0=North, CW)
-              const shadowBearing = (sunDirectionBearing + 180) % 360; // Shadow's bearing (0=North, CW)
+                ((sunAzimuth * 180) / Math.PI + 180) % 360;
+              const shadowBearing = (sunDirectionBearing + 180) % 360;
 
               const originalCoords = feature.geometry.coordinates[0];
 
@@ -193,7 +203,6 @@ function MapContainer() {
             features: shadowFeatures,
           });
         } else {
-          // If sun is below horizon, clear shadows
           map.current.getSource("shadows").setData({
             type: "FeatureCollection",
             features: [],
@@ -201,21 +210,18 @@ function MapContainer() {
         }
       };
 
-      // Initial shadow update
       updateShadows();
 
-      // Update shadows on map move and periodically
       map.current.on("moveend", updateShadows);
-      const intervalId = setInterval(updateShadows, 60 * 1000); // Update every minute
+      const intervalId = setInterval(updateShadows, 60 * 1000);
 
-      // Clean up interval on unmount
       return () => clearInterval(intervalId);
     });
 
     map.current.on("move", () => {
       setLng(map.current.getCenter().lng.toFixed(4));
       setLat(map.current.getCenter().lat.toFixed(4));
-      setZoom(map.current.getZoom()); // toFixed(2) 제거
+      setZoom(map.current.getZoom());
     });
   }, [lng, lat, zoom]);
 
