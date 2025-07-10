@@ -21,7 +21,7 @@ const MapDebugInfo = ({ longitude, latitude, zoom, userLocation }) => {
       <div>Longitude: {longitude ? longitude.toFixed(4) : 'N/A'}</div>
       <div>Latitude: {latitude ? latitude.toFixed(4) : 'N/A'}</div>
       <div>Zoom: {zoom ? zoom.toFixed(2) : 'N/A'}</div>
-      <div>User Location: {userLocation && userLocation.latitude !== undefined && userLocation.longitude !== undefined ? `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}` : 'N/A'}</div>
+      <div>User Location: {userLocation && userLocation.lat !== undefined && userLocation.lng !== undefined ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` : 'N/A'}</div>
     </div>
   );
 };
