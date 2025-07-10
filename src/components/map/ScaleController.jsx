@@ -24,7 +24,7 @@ const ScaleController = ({ map, zoom }) => {
   };
 
   return (
-    <div className='absolute bottom-[70px] right-5 flex flex-col rounded-md overflow-hidden shadow-md z-1000'>
+    <div className='absolute bottom-22 right-8 flex flex-col rounded-md overflow-hidden shadow-md z-1000'>
       <button
         onClick={handleZoomIn}
         className='w-10 h-10 bg-[#3182F7] text-white text-2xl flex justify-center items-center border-none cursor-pointer font-bold'

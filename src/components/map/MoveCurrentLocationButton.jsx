@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
 const MoveCurrentLocationButton = ({ map, userLocation }) => {
@@ -11,9 +11,9 @@ const MoveCurrentLocationButton = ({ map, userLocation }) => {
   return (
     <button
       onClick={focusOnUserLocation}
-      className="absolute bottom-5 right-5 w-10 h-10 rounded-full bg-[#3182F7] flex justify-center items-center border-none cursor-pointer z-1000"
+      className='absolute bottom-8 right-8 w-10 h-10 rounded-full bg-[#3182F7] flex justify-center items-center border-none cursor-pointer z-1000'
     >
-      <RiFocus3Line size={24} color="white" />
+      <RiFocus3Line size={24} color='white' />
     </button>
   );
 };
