@@ -156,7 +156,8 @@ function MapContainer() {
               feature.geometry.type === "Polygon"
             ) {
               const shadowLength = effectiveHeight / Math.tan(sunAltitude);
-              const shadowBearing = ((sunAzimuth * 180) / Math.PI + 180) % 360;
+              const sunDirectionBearing = ((sunAzimuth * 180) / Math.PI + 180) % 360; // Sun's bearing (0=North, CW)
+              const shadowBearing = (sunDirectionBearing + 180) % 360; // Shadow's bearing (0=North, CW)
 
               const originalCoords = feature.geometry.coordinates[0];
 
