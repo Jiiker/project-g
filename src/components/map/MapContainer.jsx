@@ -32,6 +32,7 @@ function MapContainer() {
   const [lng, setLng] = useState(126.978); // Seoul longitude
   const [lat, setLat] = useState(37.5665); // Seoul latitude
   const [zoom, setZoom] = useState(14);
+  const [userLocation, setUserLocation] = useState(null); // New state for user's location
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
@@ -42,6 +43,30 @@ function MapContainer() {
       center: [lng, lat],
       zoom: zoom,
     });
+
+    // Get user's current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+          // Optionally, center the map on the user's location
+          map.current.flyTo({ center: [longitude, latitude], zoom: 14 });
+
+          // Add a marker for the user's location
+          new mapboxgl.Marker()
+            .setLngLat([longitude, latitude])
+            .addTo(map.current);
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+          // Handle error (e.g., show a message to the user)
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
 
     map.current.on("load", () => {
       // Add 3D buildings layer
@@ -98,7 +123,6 @@ function MapContainer() {
       const updateShadows = () => {
         const center = map.current.getCenter();
         const now = new Date();
-        now.setHours(16, 0, 0, 0); // Set time to 4 PM (16:00:00.000)
         const sunPos = SunCalc.getPosition(now, center.lat, center.lng);
 
         // Sun altitude and azimuth in radians
@@ -190,6 +214,7 @@ function MapContainer() {
       <div ref={mapContainer} className='w-full h-full' />
       <div className='absolute top-0 left-0 m-2 p-2 bg-white rounded shadow-md z-10'>
         Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+        {userLocation && ` | User Location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`}
       </div>
     </div>
   );
