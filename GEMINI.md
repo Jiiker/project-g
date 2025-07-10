@@ -18,6 +18,7 @@
 
 - React: 프론트
 - Vite: 프로젝트 설정
+- Tailwind CSS: 스타일링
 - Mapbox GL JS: 지도 및 3D 건물, 그림자 표시
 - suncalc: 태양 위치 계산
 - Jest & React Testing Library: 함수 단위 및 컴포넌트 테스트
