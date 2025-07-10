@@ -22,3 +22,17 @@
 - suncalc: 태양 위치 계산
 - Jest & React Testing Library: 함수 단위 및 컴포넌트 테스트
 - React Profiler & Lighthouse: 성능 측정 및 최적화
+
+# 프로젝트 실행 및 테스트
+
+## 실행
+
+- `npm run dev`: 개발 서버를 실행합니다.
+- `npm run build`: 프로덕션용으로 앱을 빌드합니다.
+- `npm run preview`: 빌드된 앱을 미리 봅니다.
+
+## 테스트
+
+- `npm test`: Jest를 사용하여 테스트를 실행합니다.
+- 테스트 파일은 `src` 디렉터리 내에 `__tests__` 폴더를 만들어 관리합니다.
+- 파일명은 `*.test.js` 또는 `*.spec.js` 형식으로 작성합니다.
