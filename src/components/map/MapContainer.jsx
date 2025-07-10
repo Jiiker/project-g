@@ -117,6 +117,7 @@ function MapContainer() {
             "fill-color": "#000",
             "fill-opacity": 0.4,
           },
+          minzoom: 16,
         },
         "3d-buildings"
       ); // Place shadow layer below 3d-buildings
