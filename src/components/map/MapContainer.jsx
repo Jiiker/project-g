@@ -174,26 +174,44 @@ function MapContainer() {
                 ((sunAzimuth * 180) / Math.PI + 180) % 360;
               const shadowBearing = (sunDirectionBearing + 180) % 360;
 
-              const originalCoords = feature.geometry.coordinates[0];
+              const originalCoords = feature.geometry.coordinates[0]; // Assuming single outer ring
 
-              const allPoints = [];
+              // 1. Shadow of vertical faces
+              for (let i = 0; i < originalCoords.length; i++) {
+                const p1 = originalCoords[i];
+                const p2 = originalCoords[(i + 1) % originalCoords.length];
 
-              originalCoords.forEach((coord) => {
-                allPoints.push(turf.point(coord));
-                const projectedCoord = movePoint(
-                  coord[0],
-                  coord[1],
+                const p1_proj = movePoint(
+                  p1[0],
+                  p1[1],
                   shadowLength,
                   shadowBearing
                 );
-                allPoints.push(turf.point(projectedCoord));
-              });
+                const p2_proj = movePoint(
+                  p2[0],
+                  p2[1],
+                  shadowLength,
+                  shadowBearing
+                );
 
-              const pointsFeatureCollection = turf.featureCollection(allPoints);
-              const convexHull = turf.convex(pointsFeatureCollection);
+                // Create a quadrilateral for the vertical face shadow
+                const verticalFaceShadow = turf.polygon([
+                  [p1, p2, p2_proj, p1_proj, p1],
+                ]);
+                // Only add if it's a valid polygon with area
+                if (verticalFaceShadow && verticalFaceShadow.geometry && verticalFaceShadow.geometry.type === 'Polygon' && turf.area(verticalFaceShadow) > 0) {
+                    shadowFeatures.push(verticalFaceShadow);
+                }
+              }
 
-              if (convexHull) {
-                shadowFeatures.push(convexHull);
+              // 2. Shadow of the top face (projected base polygon)
+              const projectedOriginalCoords = originalCoords.map((coord) =>
+                movePoint(coord[0], coord[1], shadowLength, shadowBearing)
+              );
+              const topFaceShadow = turf.polygon([projectedOriginalCoords]);
+              // Only add if it's a valid polygon with area
+              if (topFaceShadow && topFaceShadow.geometry && topFaceShadow.geometry.type === 'Polygon' && turf.area(topFaceShadow) > 0) {
+                  shadowFeatures.push(topFaceShadow);
               }
             }
           });
