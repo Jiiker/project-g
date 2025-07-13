@@ -11,6 +11,7 @@ import TimeController from "./TimeController";
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 import { movePoint } from "../../utils/mapUtils";
+import { debounce } from "../../utils/debounce";
 
 function MapContainer() {
   const mapContainer = useRef(null);
@@ -22,8 +23,15 @@ function MapContainer() {
   const [userLocation, setUserLocation] = useState(null);
   const [timeOffset, setTimeOffset] = useState(0);
 
+  const debouncedSetTimeOffset = useCallback(debounce(setTimeOffset, 100), []);
+
   const updateShadows = useCallback(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
+
+    if (!map.current.getSource("shadows")) {
+      console.warn("Map source 'shadows' not found. Skipping shadow update.");
+      return;
+    }
 
     const center = map.current.getCenter();
     const now = new Date();
@@ -89,7 +97,7 @@ function MapContainer() {
         features: [],
       });
     }
-  }, [timeOffset]);
+  }, [timeOffset, lng, lat, zoom, pitch]);
 
   useEffect(() => {
     if (map.current) {
@@ -184,11 +192,16 @@ function MapContainer() {
       updateShadows();
     });
 
+    const debouncedSetLng = debounce((value) => setLng(value), 100);
+    const debouncedSetLat = debounce((value) => setLat(value), 100);
+    const debouncedSetZoom = debounce((value) => setZoom(value), 100);
+    const debouncedSetPitch = debounce((value) => setPitch(value), 100);
+
     map.current.on("move", () => {
-      setLng(map.current.getCenter().lng.toFixed(4));
-      setLat(map.current.getCenter().lat.toFixed(4));
-      setZoom(map.current.getZoom());
-      setPitch(map.current.getPitch());
+      debouncedSetLng(map.current.getCenter().lng.toFixed(4));
+      debouncedSetLat(map.current.getCenter().lat.toFixed(4));
+      debouncedSetZoom(map.current.getZoom());
+      debouncedSetPitch(map.current.getPitch());
     });
   }, []);
 
@@ -207,7 +220,7 @@ function MapContainer() {
 
   useEffect(() => {
     if (timeOffset !== 0) {
-      return; 
+      return;
     }
     const intervalId = setInterval(updateShadows, 60 * 1000);
     return () => clearInterval(intervalId);
@@ -231,7 +244,7 @@ function MapContainer() {
       />
       {/* Time Controller */}
       <div className="absolute top-4 left-4 z-10">
-        <TimeController timeOffset={timeOffset} onTimeOffsetChange={setTimeOffset} />
+        <TimeController timeOffset={timeOffset} onTimeOffsetChange={debouncedSetTimeOffset} />
       </div>
 
       {/* Controllers Group */}
