@@ -5,6 +5,7 @@ import * as turf from "@turf/turf";
 import MapDebugInfo from "./MapDebugInfo";
 import MoveCurrentLocationButton from "./MoveCurrentLocationButton";
 import ScaleController from "./ScaleController";
+import PitchController from "./PitchController";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -20,6 +21,7 @@ function MapContainer() {
   const [lng, setLng] = useState(126.978);
   const [lat, setLat] = useState(37.5665);
   const [zoom, setZoom] = useState(18);
+  const [pitch, setPitch] = useState(0);
   const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
@@ -31,6 +33,7 @@ function MapContainer() {
       style: "mapbox://styles/mapbox/streets-v11",
       center: [lng, lat],
       zoom: zoom,
+      pitch: 0,
     });
 
     // 브라우저 지리 위치 API를 사용하여 사용자 현재 위치 가져오기
@@ -214,8 +217,15 @@ function MapContainer() {
       setLng(map.current.getCenter().lng.toFixed(4));
       setLat(map.current.getCenter().lat.toFixed(4));
       setZoom(map.current.getZoom());
+      setPitch(map.current.getPitch());
     });
-  }, [lng, lat, zoom]);
+  }, []);
+
+  const handlePitchChange = (newPitch) => {
+    if (map.current) {
+      map.current.setPitch(newPitch);
+    }
+  };
 
   return (
     <div className='w-full h-full relative'>
@@ -224,6 +234,7 @@ function MapContainer() {
         longitude={parseFloat(lng)}
         latitude={parseFloat(lat)}
         zoom={parseFloat(zoom)}
+        pitch={pitch}
         userLocation={userLocation}
       />
       {map.current && (
@@ -234,6 +245,9 @@ function MapContainer() {
           map={map.current}
           userLocation={userLocation}
         />
+      )}
+      {map.current && (
+        <PitchController pitch={pitch} onPitchChange={handlePitchChange} />
       )}
     </div>
   );

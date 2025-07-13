@@ -14,9 +14,10 @@ import React from "react";
  * @param {number} props.longitude - 지도의 현재 경도
  * @param {number} props.latitude - 지도의 현재 위도
  * @param {number} props.zoom - 지도의 현재 줌 레벨
+ * @param {number} props.pitch - 지도의 현재 각도
  * @param {UserLocation} props.userLocation - 사용자의 현재 위치 (위도, 경도)
  */
-const MapDebugInfo = ({ longitude, latitude, zoom, userLocation }) => {
+const MapDebugInfo = ({ longitude, latitude, zoom, pitch, userLocation }) => {
   // 개발 모드가 아니면 컴포넌트를 렌더링하지 않음
   if (process.env.NODE_ENV !== "development") {
     return null;
@@ -27,6 +28,7 @@ const MapDebugInfo = ({ longitude, latitude, zoom, userLocation }) => {
       <div>Longitude: {longitude ? longitude.toFixed(4) : "N/A"}</div>
       <div>Latitude: {latitude ? latitude.toFixed(4) : "N/A"}</div>
       <div>Zoom: {zoom ? zoom.toFixed(2) : "N/A"}</div>
+      <div>Pitch: {pitch ? pitch.toFixed(2) : "N/A"}</div>
       <div>
         User Location:{" "}
         {userLocation &&
