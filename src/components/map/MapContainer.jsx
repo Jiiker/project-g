@@ -23,8 +23,6 @@ function MapContainer() {
   const [userLocation, setUserLocation] = useState(null);
   const [timeOffset, setTimeOffset] = useState(0);
 
-  const debouncedSetTimeOffset = useCallback(debounce(setTimeOffset, 100), []);
-
   const updateShadows = useCallback(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
 
@@ -59,7 +57,8 @@ function MapContainer() {
           feature.geometry.type === "Polygon"
         ) {
           const shadowLength = effectiveHeight / Math.tan(sunAltitude);
-          const sunDirectionBearing = ((sunAzimuth * 180) / Math.PI + 180) % 360;
+          const sunDirectionBearing =
+            ((sunAzimuth * 180) / Math.PI + 180) % 360;
           const shadowBearing = (sunDirectionBearing + 180) % 360;
 
           const originalCoords = feature.geometry.coordinates[0];
@@ -67,13 +66,28 @@ function MapContainer() {
           for (let i = 0; i < originalCoords.length; i++) {
             const p1 = originalCoords[i];
             const p2 = originalCoords[(i + 1) % originalCoords.length];
-            const p1_proj = movePoint(p1[0], p1[1], shadowLength, shadowBearing);
-            const p2_proj = movePoint(p2[0], p2[1], shadowLength, shadowBearing);
+            const p1_proj = movePoint(
+              p1[0],
+              p1[1],
+              shadowLength,
+              shadowBearing
+            );
+            const p2_proj = movePoint(
+              p2[0],
+              p2[1],
+              shadowLength,
+              shadowBearing
+            );
             const verticalFaceShadow = turf.polygon([
               [p1, p2, p2_proj, p1_proj, p1],
             ]);
-            if (verticalFaceShadow && verticalFaceShadow.geometry && verticalFaceShadow.geometry.type === 'Polygon' && turf.area(verticalFaceShadow) > 0) {
-                shadowFeatures.push(verticalFaceShadow);
+            if (
+              verticalFaceShadow &&
+              verticalFaceShadow.geometry &&
+              verticalFaceShadow.geometry.type === "Polygon" &&
+              turf.area(verticalFaceShadow) > 0
+            ) {
+              shadowFeatures.push(verticalFaceShadow);
             }
           }
 
@@ -81,8 +95,13 @@ function MapContainer() {
             movePoint(coord[0], coord[1], shadowLength, shadowBearing)
           );
           const topFaceShadow = turf.polygon([projectedOriginalCoords]);
-          if (topFaceShadow && topFaceShadow.geometry && topFaceShadow.geometry.type === 'Polygon' && turf.area(topFaceShadow) > 0) {
-              shadowFeatures.push(topFaceShadow);
+          if (
+            topFaceShadow &&
+            topFaceShadow.geometry &&
+            topFaceShadow.geometry.type === "Polygon" &&
+            turf.area(topFaceShadow) > 0
+          ) {
+            shadowFeatures.push(topFaceShadow);
           }
         }
       });
@@ -243,12 +262,15 @@ function MapContainer() {
         userLocation={userLocation}
       />
       {/* Time Controller */}
-      <div className="absolute top-4 left-4 z-10">
-        <TimeController timeOffset={timeOffset} onTimeOffsetChange={debouncedSetTimeOffset} />
+      <div className='absolute top-4 left-4 z-10'>
+        <TimeController
+          timeOffset={timeOffset}
+          onTimeOffsetChange={setTimeOffset}
+        />
       </div>
 
       {/* Controllers Group */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col items-end space-y-4 sm:bottom-12 sm:right-12">
+      <div className='absolute top-4 right-4 z-10 flex flex-col items-end space-y-4 sm:bottom-12 sm:right-12'>
         {map.current && userLocation && (
           <MoveCurrentLocationButton
             map={map.current}
