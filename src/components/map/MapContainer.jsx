@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import SunCalc from "suncalc";
 import * as turf from "@turf/turf";
@@ -6,15 +6,12 @@ import MapDebugInfo from "./MapDebugInfo";
 import MoveCurrentLocationButton from "./MoveCurrentLocationButton";
 import ScaleController from "./ScaleController";
 import PitchController from "./PitchController";
+import TimeController from "./TimeController";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 import { movePoint } from "../../utils/mapUtils";
 
-/**
- * Mapbox GL JS 지도를 렌더링하고 그림자 및 사용자 인터랙션을 관리하는 메인 컴포넌트.
- * @returns {JSX.Element} 지도 컨테이너 및 관련 UI 요소
- */
 function MapContainer() {
   const mapContainer = useRef(null);
   const map = useRef(null);
@@ -23,11 +20,87 @@ function MapContainer() {
   const [zoom, setZoom] = useState(18);
   const [pitch, setPitch] = useState(0);
   const [userLocation, setUserLocation] = useState(null);
+  const [timeOffset, setTimeOffset] = useState(0);
+
+  const updateShadows = useCallback(() => {
+    if (!map.current || !map.current.isStyleLoaded()) return;
+
+    const center = map.current.getCenter();
+    const now = new Date();
+    now.setHours(now.getHours() + timeOffset);
+
+    const sunPos = SunCalc.getPosition(now, center.lat, center.lng);
+    const sunAltitude = sunPos.altitude;
+    const sunAzimuth = sunPos.azimuth;
+
+    if (sunAltitude > 0) {
+      const buildingFeatures = map.current.querySourceFeatures("composite", {
+        sourceLayer: "building",
+        filter: ["==", "extrude", "true"],
+      });
+
+      const shadowFeatures = [];
+      buildingFeatures.forEach((feature) => {
+        const height = feature.properties.height || 0;
+        const minHeight = feature.properties.min_height || 0;
+        const effectiveHeight = height - minHeight;
+
+        if (
+          effectiveHeight > 0 &&
+          feature.geometry &&
+          feature.geometry.type === "Polygon"
+        ) {
+          const shadowLength = effectiveHeight / Math.tan(sunAltitude);
+          const sunDirectionBearing = ((sunAzimuth * 180) / Math.PI + 180) % 360;
+          const shadowBearing = (sunDirectionBearing + 180) % 360;
+
+          const originalCoords = feature.geometry.coordinates[0];
+
+          for (let i = 0; i < originalCoords.length; i++) {
+            const p1 = originalCoords[i];
+            const p2 = originalCoords[(i + 1) % originalCoords.length];
+            const p1_proj = movePoint(p1[0], p1[1], shadowLength, shadowBearing);
+            const p2_proj = movePoint(p2[0], p2[1], shadowLength, shadowBearing);
+            const verticalFaceShadow = turf.polygon([
+              [p1, p2, p2_proj, p1_proj, p1],
+            ]);
+            if (verticalFaceShadow && verticalFaceShadow.geometry && verticalFaceShadow.geometry.type === 'Polygon' && turf.area(verticalFaceShadow) > 0) {
+                shadowFeatures.push(verticalFaceShadow);
+            }
+          }
+
+          const projectedOriginalCoords = originalCoords.map((coord) =>
+            movePoint(coord[0], coord[1], shadowLength, shadowBearing)
+          );
+          const topFaceShadow = turf.polygon([projectedOriginalCoords]);
+          if (topFaceShadow && topFaceShadow.geometry && topFaceShadow.geometry.type === 'Polygon' && turf.area(topFaceShadow) > 0) {
+              shadowFeatures.push(topFaceShadow);
+          }
+        }
+      });
+
+      map.current.getSource("shadows").setData({
+        type: "FeatureCollection",
+        features: shadowFeatures,
+      });
+    } else {
+      map.current.getSource("shadows").setData({
+        type: "FeatureCollection",
+        features: [],
+      });
+    }
+  }, [timeOffset]);
+
+  useEffect(() => {
+    if (map.current) {
+      updateShadows();
+    }
+  }, [timeOffset, updateShadows]);
+
 
   useEffect(() => {
     if (map.current) return;
 
-    // Mapbox 지도 인스턴스 초기화
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/streets-v11",
@@ -36,20 +109,16 @@ function MapContainer() {
       pitch: 0,
     });
 
-    // 브라우저 지리 위치 API를 사용하여 사용자 현재 위치 가져오기
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
-          // 지도를 사용자 현재 위치로 이동
           map.current.flyTo({
             center: [longitude, latitude],
             zoom: 18,
             duration: 1000,
           });
-
-          // 사용자 위치에 마커 추가
           new mapboxgl.Marker()
             .setLngLat([longitude, latitude])
             .addTo(map.current);
@@ -63,9 +132,7 @@ function MapContainer() {
       console.log("Geolocation is not supported by this browser.");
     }
 
-    // 지도 로드 완료 시 이벤트 리스너
     map.current.on("load", () => {
-      // 3D 건물 레이어 추가
       const layers = map.current.getStyle().layers;
       let labelLayerId;
       for (let i = 0; i < layers.length; i++) {
@@ -93,7 +160,6 @@ function MapContainer() {
         labelLayerId
       );
 
-      // 그림자 소스 추가
       map.current.addSource("shadows", {
         type: "geojson",
         data: {
@@ -102,7 +168,6 @@ function MapContainer() {
         },
       });
 
-      // 그림자 레이어 추가
       map.current.addLayer(
         {
           id: "shadow-layer",
@@ -112,103 +177,19 @@ function MapContainer() {
             "fill-color": "#000",
             "fill-opacity": 0.4,
           },
-          minzoom: 15, // 줌 레벨 15 이상에서 그림자 렌더링
+          minzoom: 15,
         },
-        "3d-buildings" // 3D 건물 레이어 아래에 그림자 레이어 배치
+        "3d-buildings"
       );
-
-      const updateShadows = () => {
-        const center = map.current.getCenter();
-        const now = new Date();
-        const sunPos = SunCalc.getPosition(now, center.lat, center.lng);
-
-        const sunAltitude = sunPos.altitude;
-        const sunAzimuth = sunPos.azimuth;
-
-        if (sunAltitude > 0) {
-          const buildingFeatures = map.current.querySourceFeatures(
-            "composite",
-            {
-              sourceLayer: "building",
-              filter: ["==", "extrude", "true"],
-            }
-          );
-
-          const shadowFeatures = [];
-
-          buildingFeatures.forEach((feature) => {
-            const height = feature.properties.height || 0;
-            const minHeight = feature.properties.min_height || 0;
-            const effectiveHeight = height - minHeight;
-
-            if (
-              effectiveHeight > 0 &&
-              feature.geometry &&
-              feature.geometry.type === "Polygon"
-            ) {
-              const shadowLength = effectiveHeight / Math.tan(sunAltitude);
-              const sunDirectionBearing =
-                ((sunAzimuth * 180) / Math.PI + 180) % 360;
-              const shadowBearing = (sunDirectionBearing + 180) % 360;
-
-              const originalCoords = feature.geometry.coordinates[0]; // Assuming single outer ring
-
-              // 1. Shadow of vertical faces
-              for (let i = 0; i < originalCoords.length; i++) {
-                const p1 = originalCoords[i];
-                const p2 = originalCoords[(i + 1) % originalCoords.length];
-
-                const p1_proj = movePoint(
-                  p1[0],
-                  p1[1],
-                  shadowLength,
-                  shadowBearing
-                );
-                const p2_proj = movePoint(
-                  p2[0],
-                  p2[1],
-                  shadowLength,
-                  shadowBearing
-                );
-
-                // Create a quadrilateral for the vertical face shadow
-                const verticalFaceShadow = turf.polygon([
-                  [p1, p2, p2_proj, p1_proj, p1],
-                ]);
-                // Only add if it's a valid polygon with area
-                if (verticalFaceShadow && verticalFaceShadow.geometry && verticalFaceShadow.geometry.type === 'Polygon' && turf.area(verticalFaceShadow) > 0) {
-                    shadowFeatures.push(verticalFaceShadow);
-                }
-              }
-
-              // 2. Shadow of the top face (projected base polygon)
-              const projectedOriginalCoords = originalCoords.map((coord) =>
-                movePoint(coord[0], coord[1], shadowLength, shadowBearing)
-              );
-              const topFaceShadow = turf.polygon([projectedOriginalCoords]);
-              // Only add if it's a valid polygon with area
-              if (topFaceShadow && topFaceShadow.geometry && topFaceShadow.geometry.type === 'Polygon' && turf.area(topFaceShadow) > 0) {
-                  shadowFeatures.push(topFaceShadow);
-              }
-            }
-          });
-
-          map.current.getSource("shadows").setData({
-            type: "FeatureCollection",
-            features: shadowFeatures,
-          });
-        } else {
-          map.current.getSource("shadows").setData({
-            type: "FeatureCollection",
-            features: [],
-          });
-        }
-      };
 
       updateShadows();
 
       map.current.on("moveend", updateShadows);
-      const intervalId = setInterval(updateShadows, 60 * 1000);
+      const intervalId = setInterval(() => {
+        if (timeOffset === 0) {
+          updateShadows();
+        }
+      }, 60 * 1000);
 
       return () => clearInterval(intervalId);
     });
@@ -237,6 +218,7 @@ function MapContainer() {
         pitch={pitch}
         userLocation={userLocation}
       />
+      <TimeController timeOffset={timeOffset} onTimeOffsetChange={setTimeOffset} />
       {map.current && (
         <ScaleController map={map.current} zoom={parseFloat(zoom)} />
       )}
