@@ -32,10 +32,10 @@ const ScaleController = ({ map, zoom }) => {
   };
 
   return (
-    <div className='absolute bottom-22 right-8 flex flex-col rounded-md overflow-hidden shadow-md z-1000'>
+    <div className='flex flex-col rounded-md overflow-hidden shadow-md'>
       <button
         onClick={handleZoomIn}
-        className='w-10 h-10 bg-[#3182F7] text-white text-2xl flex justify-center items-center border-none cursor-pointer font-bold'
+        className='w-8 h-8 sm:w-10 sm:h-10 bg-[#3182F7] text-white text-xl sm:text-2xl flex justify-center items-center border-none cursor-pointer font-bold'
       >
         +
       </button>
@@ -43,11 +43,11 @@ const ScaleController = ({ map, zoom }) => {
         type='text'
         value={inputValue}
         readOnly
-        className='w-10 h-10 bg-white text-black text-sm text-center border-none outline-none font-bold box-border p-0 leading-10 appearance-none'
+        className='w-8 h-8 sm:w-10 sm:h-10 bg-white text-black text-xs sm:text-sm text-center border-none outline-none font-bold box-border p-0 leading-10 appearance-none'
       />
       <button
         onClick={handleZoomOut}
-        className='w-10 h-10 bg-[#3182F7] text-white text-2xl flex justify-center items-center border-none cursor-pointer font-bold'
+        className='w-8 h-8 sm:w-10 sm:h-10 bg-[#3182F7] text-white text-xl sm:text-2xl flex justify-center items-center border-none cursor-pointer font-bold'
       >
         -
       </button>

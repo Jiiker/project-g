@@ -72,20 +72,20 @@ const PitchController = ({ pitch, onPitchChange }) => {
   const topPosition = (pitch / 85) * sliderHeight;
 
   return (
-    <div className='absolute bottom-56 right-10 bg-white bg-opacity-80 p-2 rounded-full shadow-md'>
+    <div className='bg-white bg-opacity-80 p-1 sm:p-2 rounded-full shadow-md'>
       <div
         ref={sliderRef}
-        className='relative w-2.5 h-[120px] bg-gray-300 rounded-full cursor-pointer'
+        className='relative w-2 h-24 sm:w-2.5 sm:h-[120px] bg-gray-300 rounded-full cursor-pointer'
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className='absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-[#3182F7] rounded-full shadow-lg flex items-center justify-center'
-          style={{ top: `${topPosition - 16}px` }}
+          className='absolute left-1/2 transform -translate-x-1/2 w-7 h-7 sm:w-8 sm:h-8 bg-[#3182F7] rounded-full shadow-lg flex items-center justify-center'
+          style={{ top: `${topPosition - 14}px` }}
         >
-          <FaEye className='text-white' />
+          <FaEye className='text-white text-base sm:text-lg' />
         </div>
       </div>
     </div>

@@ -230,18 +230,22 @@ function MapContainer() {
         userLocation={userLocation}
       />
       <TimeController timeOffset={timeOffset} onTimeOffsetChange={setTimeOffset} />
-      {map.current && (
-        <ScaleController map={map.current} zoom={parseFloat(zoom)} />
-      )}
-      {map.current && userLocation && (
-        <MoveCurrentLocationButton
-          map={map.current}
-          userLocation={userLocation}
-        />
-      )}
-      {map.current && (
-        <PitchController pitch={pitch} onPitchChange={handlePitchChange} />
-      )}
+
+      {/* Controllers Group */}
+      <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 flex flex-col items-center space-y-4">
+        {map.current && (
+          <PitchController pitch={pitch} onPitchChange={handlePitchChange} />
+        )}
+        {map.current && (
+          <ScaleController map={map.current} zoom={parseFloat(zoom)} />
+        )}
+        {map.current && userLocation && (
+          <MoveCurrentLocationButton
+            map={map.current}
+            userLocation={userLocation}
+          />
+        )}
+      </div>
     </div>
   );
 }
