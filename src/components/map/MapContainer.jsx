@@ -97,7 +97,6 @@ function MapContainer() {
     }
   }, [timeOffset, updateShadows]);
 
-
   useEffect(() => {
     if (map.current) return;
 
@@ -183,15 +182,6 @@ function MapContainer() {
       );
 
       updateShadows();
-
-      map.current.on("moveend", updateShadows);
-      const intervalId = setInterval(() => {
-        if (timeOffset === 0) {
-          updateShadows();
-        }
-      }, 60 * 1000);
-
-      return () => clearInterval(intervalId);
     });
 
     map.current.on("move", () => {
@@ -201,6 +191,27 @@ function MapContainer() {
       setPitch(map.current.getPitch());
     });
   }, []);
+
+  useEffect(() => {
+    if (!map.current || !map.current.isStyleLoaded()) return;
+
+    const handleMoveEnd = () => updateShadows();
+    map.current.on("moveend", handleMoveEnd);
+
+    return () => {
+      if (map.current) {
+        map.current.off("moveend", handleMoveEnd);
+      }
+    };
+  }, [updateShadows]);
+
+  useEffect(() => {
+    if (timeOffset !== 0) {
+      return; 
+    }
+    const intervalId = setInterval(updateShadows, 60 * 1000);
+    return () => clearInterval(intervalId);
+  }, [timeOffset, updateShadows]);
 
   const handlePitchChange = (newPitch) => {
     if (map.current) {
