@@ -4,6 +4,7 @@ import { FaEye } from "react-icons/fa";
 const PitchController = ({ pitch, onPitchChange }) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [displayPitch, setDisplayPitch] = useState(pitch); // UI를 위한 로컬 상태
 
   // Icon dimensions (assuming sm:w-8 sm:h-8 is the max size)
   const ICON_HEIGHT = 32; // sm:h-8 is 32px
@@ -37,6 +38,7 @@ const PitchController = ({ pitch, onPitchChange }) => {
         if (newPitch > 85) newPitch = 85;
 
         onPitchChange(newPitch);
+        setDisplayPitch(newPitch); // UI를 즉시 업데이트
       }
     },
     [onPitchChange, ICON_HALF_HEIGHT]
@@ -91,16 +93,23 @@ const PitchController = ({ pitch, onPitchChange }) => {
   const [iconTopStyle, setIconTopStyle] = useState(0);
 
   useEffect(() => {
+    // pitch prop이 변경될 때 displayPitch를 업데이트하여 외부 변경에 반응
+    if (!isDragging) {
+      setDisplayPitch(pitch);
+    }
+  }, [pitch, isDragging]);
+
+  useEffect(() => {
     if (sliderRef.current) {
       const sliderHeight = sliderRef.current.getBoundingClientRect().height;
       const minCenter = ICON_HALF_HEIGHT;
       const maxCenter = sliderHeight - ICON_HALF_HEIGHT;
       const usableSliderRange = maxCenter - minCenter;
 
-      const iconCenterPosition = (pitch / 85) * usableSliderRange + minCenter;
+      const iconCenterPosition = (displayPitch / 85) * usableSliderRange + minCenter;
       setIconTopStyle(iconCenterPosition - ICON_HALF_HEIGHT);
     }
-  }, [pitch, ICON_HALF_HEIGHT]); // Recalculate when pitch or icon height changes
+  }, [displayPitch, ICON_HALF_HEIGHT]); // displayPitch가 변경될 때마다 재계산
 
   return (
     <div className='bg-white bg-opacity-80 p-1 sm:p-2 rounded-full shadow-md'>
