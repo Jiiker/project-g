@@ -232,7 +232,7 @@ function MapContainer() {
       <TimeController timeOffset={timeOffset} onTimeOffsetChange={setTimeOffset} />
 
       {/* Controllers Group */}
-      <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 flex flex-col items-center space-y-4">
+      <div className="absolute bottom-8 right-8 sm:bottom-12 sm:right-12 flex flex-col items-center space-y-4">
         {map.current && (
           <PitchController pitch={pitch} onPitchChange={handlePitchChange} />
         )}
