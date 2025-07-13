@@ -12,7 +12,7 @@ const TimeController = ({ timeOffset, onTimeOffsetChange }) => {
   };
 
   return (
-    <div className="absolute top-4 left-4 sm:top-8 sm:right-8 bg-white bg-opacity-80 rounded-lg shadow-md p-1 sm:p-2 flex items-center space-x-1 sm:space-x-2 gap-0.5 sm:gap-1">
+    <div className="bg-white bg-opacity-80 rounded-lg shadow-md p-1 sm:p-2 flex items-center space-x-1 sm:space-x-2 gap-0.5 sm:gap-1">
       <FaSun className="text-yellow-500 text-xl sm:text-2xl" />
       <button onClick={handleDecrement} className="p-1 rounded-full bg-[#3182F7] hover:bg-blue-600">
         <HiMinus className="text-white text-sm sm:text-base" />
